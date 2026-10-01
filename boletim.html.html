@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Notas Completa 📚</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --border-color: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --success: #22c55e;
+            --warning: #eab308;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            color: var(--accent);
+            margin-bottom: 5px;
+        }
+
+        header p {
+            color: var(--text-muted);
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            padding: 12px 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            color: var(--accent);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .materia-nome {
+            font-weight: 600;
+        }
+
+        input[type="number"] {
+            width: 60px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.95rem;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .btn {
+            background-color: var(--accent);
+            color: #0f172a;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            display: block;
+            width: 100%;
+            margin-top: 20px;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .resumo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .resumo-box {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .resumo-box h3 {
+            margin: 0;
+            font-size: 1.8rem;
+            color: var(--accent);
+        }
+
+        .resumo-box p {
+            margin: 5px 0 0 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-aprovado { background-color: rgba(34, 197, 94, 0.2); color: var(--success); }
+        .status-recuperacao { background-color: rgba(239, 68, 68, 0.2); color: var(--danger); }
+        .status-meta { background-color: rgba(56, 189, 248, 0.15); color: var(--accent); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Calculadora Anual de Notas 📚</h1>
+        <p>Insira suas notas dos trimestres e EACs para calcular a média e as metas do T3!</p>
+    </header>
+
+    <div class="resumo-grid">
+        <div class="resumo-box">
+            <h3 id="res-tranquilas">0</h3>
+            <p>Metas Tranquilas (≤ 3.0) 😎</p>
+        </div>
+        <div class="resumo-box">
+            <h3 id="res-normais">0</h3>
+            <p>Metas Normais</p>
+        </div>
+        <div class="resumo-box">
+            <h3 id="res-atencao">0</h3>
+            <p>Atenção / Recuperação</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Matéria</th>
+                    <th>T1 / EAC1</th>
+                    <th>T2 / EAC2</th>
+                    <th>T3 / EAC3</th>
+                    <th>Média Final</th>
+                    <th>Situação / Meta T3</th>
+                </tr>
+            </thead>
+            <tbody id="tabela-materias">
+                <!-- Preenchido via JavaScript -->
+            </tbody>
+        </table>
+
+        <button class="btn" onclick="calcularNotas()">Calcular Minhas Metas 🚀</button>
+    </div>
+</div>
+
+<script>
+    // Dados padrão baseados no seu notas.json[cite: 35]
+    const materiasIniciais = [
+        { materia: "Artes Integradas", t1: null, eac1: null, t2: null, eac2: null, t3: null, eac3: null },
+        { materia: "Biologia", t1: null, eac1: null, t2: null, eac2: null, t3: null, eac3: null },
+        { materia: "Educação Financeira", t1: null, eac1: null, t2: null, eac2: null, t3: null, eac3: null },
+        { materia: "Educação Física", t1: null, eac1: null, t2: null, eac2: null, t3: null, eac3: null },
+        { materia: "Ensino Religioso", t1: null, eac1: null, t2: null, eac2: null, t3: null, eac3: null },
+        { materia: "Escrita Criativa", t1: null, eac1: null, t2: null, eac2: null, t3: null, eac3: null },
+        { materia: "Física", t1: null, eac1: null, t2: null, eac2: null, t3: null, eac3: null },
+        { materia: "Geografia", t1: null, eac1: null, t2: null, eac2: null, t3: null, eac3: null },
+        { materia: "História", t1: null, eac1: null, t2: null, eac2: null, t3: null, eac3: null },
+        { materia: "Língua Estrangeira - Espanhol", t1: null, eac1: null, t2: null, eac2: null, t3: null, eac3: null },
+        { materia: "Língua Estrangeira - Inglês", t1: null, eac1: null, t2: null, eac2: null, t3: null, eac3: null },
+        { materia: "Língua Portuguesa", t1: null, eac1: null, t2: null, eac2: null, t3: null, eac3: null },
+        { materia: "Literatura", t1: null, eac1: null, t2: null, eac2: null, t3: null, eac3: null },
+        { materia: "Matemática", t1: null, eac1: null, t2: null, eac2: null, t3: null, eac3: null },
+        { materia: "Projeto Integrador de Natureza", t1: null, eac1: null, t2: null, eac2: null, t3: null, eac3: null },
+        { materia: "Química", t1: null, eac1: null, t2: null, eac2: null, t3: null, eac3: null },
+        { materia: "Sociologia", t1: null, eac1: null, t2: null, eac2: null, t3: null, eac3: null }
+    ];
+
+    const MEDIA_MINIMA = 6.0;
+
+    function carregarTabela() {
+        const tbody = document.getElementById('tabela-materias');
+        tbody.innerHTML = '';
+
+        materiasIniciais.forEach((item, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="materia-nome">${item.materia}</td>
+                <td>
+                    <div style="font-size:0.75rem; color:var(--text-muted)">T1: <input type="number" step="0.1" id="t1_${index}" value="${item.t1 !== null ? item.t1 : ''}"></div>
+                    <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">EAC1: <input type="number" step="0.1" id="eac1_${index}" value="${item.eac1 !== null ? item.eac1 : ''}"></div>
+                </td>
+                <td>
+                    <div style="font-size:0.75rem; color:var(--text-muted)">T2: <input type="number" step="0.1" id="t2_${index}" value="${item.t2 !== null ? item.t2 : ''}"></div>
+                    <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">EAC2: <input type="number" step="0.1" id="eac2_${index}" value="${item.eac2 !== null ? item.eac2 : ''}"></div>
+                </td>
+                <td>
+                    <div style="font-size:0.75rem; color:var(--text-muted)">T3: <input type="number" step="0.1" id="t3_${index}" value="${item.t3 !== null ? item.t3 : ''}"></div>
+                    <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">EAC3: <input type="number" step="0.1" id="eac3_${index}" value="${item.eac3 !== null ? item.eac3 : ''}"></div>
+                </td>
+                <td><span id="media_${index}">-</span></td>
+                <td><span id="status_${index}" class="status-badge status-meta">Aguardando</span></td>
+            `;
+            tbody.appendChild(tr);
+        });
+        calcularNotas();
+    }
+
+    function obterMaior(n, e) {
+        if (isNaN(n) && isNaN(e)) return null;
+        if (isNaN(n)) return e;
+        if (isNaN(e)) return n;
+        return Math.max(n, e);
+    }
+
+    function calcularNotas() {
+        let tranquilas = 0;
+        let normais = 0;
+        let atencao = 0;
+
+        materiasIniciais.forEach((_, index) => {
+            const t1Input = parseFloat(document.getElementById(`t1_${index}`).value);
+            const eac1Input = parseFloat(document.getElementById(`eac1_${index}`).value);
+            const t2Input = parseFloat(document.getElementById(`t2_${index}`).value);
+            const eac2Input = parseFloat(document.getElementById(`eac2_${index}`).value);
+            const t3Input = parseFloat(document.getElementById(`t3_${index}`).value);
+            const eac3Input = parseFloat(document.getElementById(`eac3_${index}`).value);
+
+            const t1_final = obterMaior(t1Input, eac1Input);
+            const t2_final = obterMaior(t2Input, eac2Input);
+            const t3_final = obterMaior(t3Input, eac3Input);
+
+            const mediaSpan = document.getElementById(`media_${index}`);
+            const statusSpan = document.getElementById(`status_${index}`);
+
+            let statusText = "";
+            let statusClass = "status-meta";
+
+            // 1. Já tem todas as notas (calcula média final do ano)[cite: 36]
+            if (t1_final !== null && t2_final !== null && t3_final !== null) {
+                const media = ((t1_final * 3) + (t2_final * 3) + (t3_final * 4)) / 10;
+                mediaSpan.textContent = media.toFixed(2);
+                if (media >= MEDIA_MINIMA) {
+                    statusText = "APROVADO! 🎉";
+                    statusClass = "status-aprovado";
+                    tranquilas++;
+                } else {
+                    statusText = "RECUPERAÇÃO ⚠️";
+                    statusClass = "status-recuperacao";
+                    atencao++;
+                }
+            }
+            // 2. Tem T1 e T2 normais (Falta T3)[cite: 36]
+            else if (t1_final !== null && t2_final !== null) {
+                mediaSpan.textContent = "-";
+                const pontos_acumulados = (t1_final * 3) + (t2_final * 3);
+                const nota3_necessaria = (MEDIA_MINIMA * 10 - pontos_acumulados) / 4;
+
+                if (nota3_necessaria <= 0) {
+                    statusText = "JÁ PASSOU! 🎉";
+                    statusClass = "status-aprovado";
+                    tranquilas++;
+                } else if (nota3_necessaria <= 3.0) {
+                    statusText = `Meta T3: ${nota3_necessaria.toFixed(1)} 😎`;
+                    statusClass = "status-aprovado";
+                    tranquilas++;
+                } else if (nota3_necessaria <= 10.0) {
+                    statusText = `Meta T3: ${nota3_necessaria.toFixed(1)}`;
+                    statusClass = "status-meta";
+                    normais++;
+                } else {
+                    statusText = `Meta T3: ${nota3_necessaria.toFixed(1)} ⚠️`;
+                    statusClass = "status-recuperacao";
+                    atencao++;
+                }
+            }
+            // 3. Sem T1 (S/P), mas com T2[cite: 36]
+            else if (t1_final === null && t2_final !== null) {
+                mediaSpan.textContent = "-";
+                const pontos_acumulados = t2_final * 3;
+                const nota3_necessaria = (MEDIA_MINIMA * 7 - pontos_acumulados) / 4;
+
+                if (nota3_necessaria <= 0) {
+                    statusText = "JÁ PASSOU! 🎉 (S/T1)";
+                    statusClass = "status-aprovado";
+                    tranquilas++;
+                } else if (nota3_necessaria <= 3.0) {
+                    statusText = `Meta T3: ${nota3_necessaria.toFixed(1)} 😎`;
+                    statusClass = "status-aprovado";
+                    tranquilas++;
+                } else {
+                    statusText = `Meta T3: ${nota3_necessaria.toFixed(1)}`;
+                    statusClass = "status-meta";
+                    normais++;
+                }
+            } else {
+                mediaSpan.textContent = "-";
+                statusText = "Aguardando T2";
+                statusClass = "status-meta";
+            }
+
+            statusSpan.textContent = statusText;
+            statusSpan.className = `status-badge ${statusClass}`;
+        });
+
+        document.getElementById('res-tranquilas').textContent = tranquilas;
+        document.getElementById('res-normais').textContent = normais;
+        document.getElementById('res-atencao').textContent = atencao;
+    }
+
+    window.onload = carregarTabela;
+</script>
+
+</body>
+</html>
